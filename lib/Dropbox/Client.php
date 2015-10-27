@@ -926,6 +926,46 @@ class Client
     }
 
     /**
+     * Returns a list of all shared folders the authenticated user has access to or metadata about a specific shared folder.
+     *
+     * @param string|null $sharedFolderId
+     *    The ID of a specific shared folder.
+     *
+     * @param string|null $includeMembership
+     *    Required if shared_folder_id is specified. If true, include a list of members and a list of groups for the shared folder.
+     *
+     * @param string|null $showUnmounted
+     *    This value, either true or false(default), determines whether the returned list of shared folders will include shared folders that the user has left (but may still rejoin).
+     *
+     * @return array
+     *    A list of shared folders metadata objects, or the metadata for a specific shared folder
+     *    if the shared_folder_id parameter is specified. Note that same_team is only present if
+     *    the linked account is a member of a Dropbox for Business team, and member_id is only
+     *    present when this endpoint is called by a Dropbox for Business app and the user is on
+     *    that team. The path is None for shared folders that the user has left. The membership
+     *    field only contains users who have joined the shared folder and does not include users
+     *    who have been invited but have not accepted. When the active field is false, it means
+     *    that a user has left a shared folder (but may still rejoin).
+     *
+     * @throws Exception
+     */
+    function getSharedFolders($sharedFolderId = null, $includeMembership = null, $showUnmounted = null)
+    {
+        Checker::argStringNonEmptyOrNull("sharedFolderId", $sharedFolderId);
+        Checker::argStringNonEmptyOrNull("includeMembership", $includeMembership);
+        Checker::argStringNonEmptyOrNull("showUnmounted", $showUnmounted);
+
+        $response = $this->doGet($this->apiHost, "1/shared_folders", array(
+            "shared_folder_id" => $sharedFolderId,
+            "include_membership" => $includeMembership,
+            "show_unmounted" => $showUnmounted));
+
+        if ($response->statusCode !== 200) throw RequestUtil::unexpectedStatus($response);
+
+        return RequestUtil::parseResponseJson($response->body);
+    }
+
+    /**
      * Takes a copy of the file at the given revision and saves it over the current copy.  This
      * will create a new revision, but the file contents will match the revision you specified.
      *
